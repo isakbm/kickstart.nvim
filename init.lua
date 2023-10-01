@@ -28,10 +28,12 @@ require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
 
   -- Git related plugins
-  'tpope/vim-fugitive',     -- Git related plugins
-  'sindrets/diffview.nvim', -- Git diff
-  'rbong/vim-flog',         -- Git graph
-  'tpope/vim-rhubarb',
+  'tpope/vim-fugitive',     -- `:help fugitive` call regular git CLI commands with `:Git`
+  'sindrets/diffview.nvim', -- `:help diffview` get a nice interactive git diff view with `:Diffview...
+  {
+    'rbong/vim-flog',         -- `:help flog` get a nice git graph with `:Flog`
+  },
+  'tpope/vim-rhubarb',      -- `:help rhubarb` .... not really sure what this is used for yet
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
@@ -191,7 +193,7 @@ require('lazy').setup({
 -- NOTE: You can change these options as you wish!
 
 -- Set highlight on search
-vim.o.hlsearch = true
+vim.o.hlsearch = false
 
 -- Make line numbers default
 vim.wo.number = true
@@ -360,6 +362,23 @@ require('nvim-treesitter.configs').setup {
   },
 }
 
+-- [[ A helper metho, use some builtin lua method if it exists ... but I couldn't find any ]]
+--
+-- Function to convert a table to a string
+local function tableToString(t)
+    local result = "{"  -- Start with an opening curly brace
+
+    for i, v in ipairs(t) do
+        if i > 1 then
+            result = result .. ", "  -- Add a comma and space separator
+        end
+        result = result .. tostring(v)  -- Convert the element to a string and concatenate
+    end
+
+    result = result .. "}"  -- End with a closing curly brace
+    return result
+end
+
 do
   -- [[ Trivial remappings not related to plugins ]]
 
@@ -369,8 +388,23 @@ do
     vim.keymap.set({ 'n', 'v', 'i' }, name, '<Nop>', { desc = 'Just avoid using arrow keys' })
   end
 
-  -- Custom go to end of line since $ key is inconveient on my keyboard
-  vim.keymap.set('n', '1', '$', { desc = 'End of line' })
+
+  -- Special git diff action when pressing "," while Flog buffer is active
+  -- Shows git diff between what is currently active in working tree and the commit where the cursor is at in the tree
+  vim.keymap.set('n', ',', function()
+
+    local current_buffer = vim.api.nvim_get_current_buf()
+    local current_buffer_name = vim.api.nvim_buf_get_name(current_buffer)
+    -- see lua pattern matching documentation for explanation of the below non-regex pattern
+    local flog_buffer_active = string.match(current_buffer_name, "/?flog%-%d+ %[max_count=%d+%]")
+
+    if not flog_buffer_active then return 
+    end
+
+    return '<Plug>(FlogStartCommand) DiffviewOpen<cr>'
+
+  end, { expr = true })
+
 end
 
 -- Diagnostic keymaps
