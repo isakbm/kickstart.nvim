@@ -362,23 +362,6 @@ require('nvim-treesitter.configs').setup {
   },
 }
 
--- [[ A helper metho, use some builtin lua method if it exists ... but I couldn't find any ]]
---
--- Function to convert a table to a string
-local function tableToString(t)
-    local result = "{"  -- Start with an opening curly brace
-
-    for i, v in ipairs(t) do
-        if i > 1 then
-            result = result .. ", "  -- Add a comma and space separator
-        end
-        result = result .. tostring(v)  -- Convert the element to a string and concatenate
-    end
-
-    result = result .. "}"  -- End with a closing curly brace
-    return result
-end
-
 do
   -- [[ Trivial remappings not related to plugins ]]
 
@@ -398,7 +381,7 @@ do
     -- see lua pattern matching documentation for explanation of the below non-regex pattern
     local flog_buffer_active = string.match(current_buffer_name, "/?flog%-%d+ %[max_count=%d+%]")
 
-    if not flog_buffer_active then return 
+    if not flog_buffer_active then return
     end
 
     return '<Plug>(FlogStartCommand) DiffviewOpen<cr>'
