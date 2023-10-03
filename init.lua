@@ -9,13 +9,13 @@ vim.g.maplocalleader = ' '
 --    `:help lazy.nvim.txt` for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system {
-    'git', 'clone',
-    '--filter=blob:none',
-    'https://github.com/folke/lazy.nvim.git',
-    '--branch=stable', -- latest stable release
-    lazypath,
-  }
+vim.fn.system {
+  'git', 'clone',
+  '--filter=blob:none',
+  'https://github.com/folke/lazy.nvim.git',
+  '--branch=stable', -- latest stable release
+  lazypath,
+}
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -25,15 +25,15 @@ vim.opt.rtp:prepend(lazypath)
 --  You can also configure plugins after the setup call,
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
-  -- NOTE: First, some plugins that don't require any configuration
+-- NOTE: First, some plugins that don't require any configuration
 
-  -- Git related plugins
-  'tpope/vim-fugitive',     -- `:help fugitive` call regular git CLI commands with `:Git`
-  'sindrets/diffview.nvim', -- `:help diffview` get a nice interactive git diff view with `:Diffview...
-  {
-    'rbong/vim-flog',         -- `:help flog` get a nice git graph with `:Flog`
-  },
-  'tpope/vim-rhubarb',      -- `:help rhubarb` .... not really sure what this is used for yet
+-- Git related plugins
+'tpope/vim-fugitive',     -- `:help fugitive` call regular git CLI commands with `:Git`
+'sindrets/diffview.nvim', -- `:help diffview` get a nice interactive git diff view with `:Diffview...
+{
+  'rbong/vim-flog',       -- `:help flog` get a nice git graph with `:Flog`
+},
+'tpope/vim-rhubarb',      -- `:help rhubarb` .... not really sure what this is used for yet
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
@@ -113,7 +113,10 @@ require('lazy').setup({
     'navarasu/onedark.nvim',
     priority = 1000,
     config = function()
-      vim.cmd.colorscheme 'onedark'
+      require('onedark').setup {
+        style = 'warmer'
+      }
+      require('onedark').load()
     end,
   },
 
@@ -264,7 +267,7 @@ require('telescope').setup {
   },
 }
 
--- Enable telescope fzf native, if installed
+-- Enable telescope fzf (fuzzy finder) native, if installed
 pcall(require('telescope').load_extension, 'fzf')
 
 -- See `:help telescope.builtin`
@@ -300,7 +303,7 @@ vim.keymap.set('n', '<leader>l', ":e ~/.config/nvim/init.lua<cr>", { desc = '[L]
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim' },
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'prisma'},
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = false,
@@ -365,29 +368,34 @@ require('nvim-treesitter.configs').setup {
 do
   -- [[ Trivial remappings not related to plugins ]]
 
+  vim.keymap.set({'i'}, '<M-h>', '<Left>', { desc = 'Move left while inserting' });
+  vim.keymap.set({'i'}, '<M-j>', '<Down>', { desc = 'Move left while inserting' });
+  vim.keymap.set({'i'}, '<M-k>', '<Up>', { desc = 'Move left while inserting' });
+  vim.keymap.set({'i'}, '<M-l>', '<Right>', { desc = 'Move left while inserting' });
+
+  
   -- Force myself to stop using arrow keys ...
   local unmapped_keys = { '<Left>', '<Right>', '<Up>', '<Down>' }
   for _, name in ipairs(unmapped_keys) do
     vim.keymap.set({ 'n', 'v', 'i' }, name, '<Nop>', { desc = 'Just avoid using arrow keys' })
   end
 
-
+  -- Relative line numbering ... lets try it out
+  vim.wo.relativenumber = true
   -- Special git diff action when pressing "," while Flog buffer is active
   -- Shows git diff between what is currently active in working tree and the commit where the cursor is at in the tree
   vim.keymap.set('n', ',', function()
-
     local current_buffer = vim.api.nvim_get_current_buf()
     local current_buffer_name = vim.api.nvim_buf_get_name(current_buffer)
     -- see lua pattern matching documentation for explanation of the below non-regex pattern
     local flog_buffer_active = string.match(current_buffer_name, "/?flog%-%d+ %[max_count=%d+%]")
 
-    if not flog_buffer_active then return
+    if not flog_buffer_active then
+      return
     end
 
     return '<Plug>(FlogStartCommand) DiffviewOpen<cr>'
-
   end, { expr = true })
-
 end
 
 -- Diagnostic keymaps
@@ -416,12 +424,14 @@ local on_attach = function(_, bufnr)
   lsp_nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
   lsp_nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
 
+  lsp_nmap('<leader>rx', vim.diagnostic.goto_next, 'Diagnostic')
+  
   lsp_nmap('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
   lsp_nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
   lsp_nmap('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
   lsp_nmap('<leader>D', vim.lsp.buf.type_definition, 'Type [D]efinition')
   lsp_nmap('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-  lsp_nmap('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
+  lsp_nmap('<leader>ps', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[P]roject [S]ymbols')
 
   -- See `:help K` for why this keymap
   lsp_nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
@@ -429,11 +439,11 @@ local on_attach = function(_, bufnr)
 
   -- Lesser used LSP functionality
   lsp_nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
-  lsp_nmap('<leader>wa', vim.lsp.buf.add_workspace_folder, '[W]orkspace [A]dd Folder')
-  lsp_nmap('<leader>wr', vim.lsp.buf.remove_workspace_folder, '[W]orkspace [R]emove Folder')
-  lsp_nmap('<leader>wl', function()
+  lsp_nmap('<leader>pa', vim.lsp.buf.add_workspace_folder, '[P]roject [A]dd Folder')
+  lsp_nmap('<leader>pr', vim.lsp.buf.remove_workspace_folder, '[P]roject [R]emove Folder')
+  lsp_nmap('<leader>pl', function()
     print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-  end, '[W]orkspace [L]ist Folders')
+  end, '[P]roject [L]ist Folders')
 
   -- Create a command `:Format` local to the LSP buffer
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
@@ -450,7 +460,7 @@ require('which-key').register({
   ['<leader>h'] = { name = 'More git', _ = 'which_key_ignore' },
   ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
   ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
-  ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+  ['<leader>p'] = { name = '[P]roject', _ = 'which_key_ignore' },
 })
 
 -- Enable the following language servers
@@ -466,7 +476,8 @@ local servers = {
   -- gopls = {},
   -- pyright = {},
   rust_analyzer = {},
-  -- tsserver = {},
+  prismals = {},
+  tsserver = {},
   -- html = { filetypes = { 'html', 'twig', 'hbs'} },
 
   lua_ls = {
