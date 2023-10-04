@@ -9,13 +9,13 @@ vim.g.maplocalleader = ' '
 --    `:help lazy.nvim.txt` for more info
 local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
 if not vim.loop.fs_stat(lazypath) then
-vim.fn.system {
-  'git', 'clone',
-  '--filter=blob:none',
-  'https://github.com/folke/lazy.nvim.git',
-  '--branch=stable', -- latest stable release
-  lazypath,
-}
+  vim.fn.system {
+    'git', 'clone',
+    '--filter=blob:none',
+    'https://github.com/folke/lazy.nvim.git',
+    '--branch=stable', -- latest stable release
+    lazypath,
+  }
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -25,15 +25,15 @@ vim.opt.rtp:prepend(lazypath)
 --  You can also configure plugins after the setup call,
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
--- NOTE: First, some plugins that don't require any configuration
+  -- NOTE: First, some plugins that don't require any configuration
 
--- Git related plugins
-'tpope/vim-fugitive',     -- `:help fugitive` call regular git CLI commands with `:Git`
-'sindrets/diffview.nvim', -- `:help diffview` get a nice interactive git diff view with `:Diffview...
-{
-  'rbong/vim-flog',       -- `:help flog` get a nice git graph with `:Flog`
-},
-'tpope/vim-rhubarb',      -- `:help rhubarb` .... not really sure what this is used for yet
+  -- Git related plugins
+  'tpope/vim-fugitive',     -- `:help fugitive` call regular git CLI commands with `:Git`
+  'sindrets/diffview.nvim', -- `:help diffview` get a nice interactive git diff view with `:Diffview...
+  {
+    'rbong/vim-flog',       -- `:help flog` get a nice git graph with `:Flog`
+  },
+  'tpope/vim-rhubarb',      -- `:help rhubarb` .... not really sure what this is used for yet
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
@@ -140,7 +140,9 @@ require('lazy').setup({
     -- Enable `lukas-reineke/indent-blankline.nvim`
     -- See `:help indent_blankline.txt`
     main = "ibl",
-    opts = {},
+    opts = {
+      indent = { char = '│' },
+    },
   },
 
   -- "gc" to comment visual regions/lines
@@ -282,7 +284,8 @@ vim.keymap.set('n', '<leader>/', function()
 end, { desc = '[/] Fuzzily search in current buffer' })
 
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
-vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
+vim.keymap.set('n', '<leader>sf', function() require('telescope.builtin').find_files({ hidden = true }) end,
+  { desc = '[S]earch [F]iles' })
 vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
 vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
 vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
@@ -290,8 +293,21 @@ vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { de
 vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
 
 -- [[ Git diff views ]]
-vim.keymap.set('n', '<leader>gdo', require('diffview').open, { desc = '[G]it [D]iff [O]pen' })
-vim.keymap.set('n', '<leader>gdc', require('diffview').close, { desc = '[G]it [D]iff [C]lose' })
+do
+  local diffviewOpen = false
+  vim.keymap.set('n', '<leader>gd', function(args)
+    local dv = require('diffview')
+    diffviewOpen = not (diffviewOpen)
+    if diffviewOpen then
+      return dv.open(args)
+    else
+      return dv.close(args)
+    end
+  end, { desc = '[G]it [D]iff' })
+end
+
+-- vim.keymap.set('n', '<leader>gdo', require('diffview').open, { desc = '[G]it [D]iff [O]pen' })
+-- vim.keymap.set('n', '<leader>gdc', require('diffview').close, { desc = '[G]it [D]iff [C]lose' })
 
 -- [[ Git log as graph ... uses vim-flog, we did not find a way to call the api directly ... ]]
 vim.keymap.set('n', '<leader>gl', ":Flog<cr>", { desc = '[G]it [L]og' })
@@ -303,7 +319,8 @@ vim.keymap.set('n', '<leader>l', ":e ~/.config/nvim/init.lua<cr>", { desc = '[L]
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'prisma'},
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim',
+    'prisma' },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = false,
@@ -368,17 +385,17 @@ require('nvim-treesitter.configs').setup {
 do
   -- [[ Trivial remappings not related to plugins ]]
 
-  vim.keymap.set({'i'}, '<M-h>', '<Left>', { desc = 'Move left while inserting' });
-  vim.keymap.set({'i'}, '<M-j>', '<Down>', { desc = 'Move left while inserting' });
-  vim.keymap.set({'i'}, '<M-k>', '<Up>', { desc = 'Move left while inserting' });
-  vim.keymap.set({'i'}, '<M-l>', '<Right>', { desc = 'Move left while inserting' });
+  vim.keymap.set({ 'i' }, '<M-h>', '<Left>', { desc = 'Move left while inserting' });
+  vim.keymap.set({ 'i' }, '<M-j>', '<Down>', { desc = 'Move left while inserting' });
+  vim.keymap.set({ 'i' }, '<M-k>', '<Up>', { desc = 'Move left while inserting' });
+  vim.keymap.set({ 'i' }, '<M-l>', '<Right>', { desc = 'Move left while inserting' });
 
-  
+
   -- Force myself to stop using arrow keys ...
-  local unmapped_keys = { '<Left>', '<Right>', '<Up>', '<Down>' }
-  for _, name in ipairs(unmapped_keys) do
-    vim.keymap.set({ 'n', 'v', 'i' }, name, '<Nop>', { desc = 'Just avoid using arrow keys' })
-  end
+  -- local unmapped_keys = { '<Left>', '<Right>', '<Up>', '<Down>' }
+  -- for _, name in ipairs(unmapped_keys) do
+  --   vim.keymap.set({ 'n', 'v', 'i' }, name, '<Nop>', { desc = 'Just avoid using arrow keys' })
+  -- end
 
   -- Relative line numbering ... lets try it out
   vim.wo.relativenumber = true
@@ -425,7 +442,7 @@ local on_attach = function(_, bufnr)
   lsp_nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
 
   lsp_nmap('<leader>rx', vim.diagnostic.goto_next, 'Diagnostic')
-  
+
   lsp_nmap('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
   lsp_nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
   lsp_nmap('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
@@ -456,7 +473,6 @@ require('which-key').register({
   ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
   ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
   ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
-  ['<leader>gd'] = { name = '[G]it [D]iff', _ = 'which_key_ignore' },
   ['<leader>h'] = { name = 'More git', _ = 'which_key_ignore' },
   ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
   ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
