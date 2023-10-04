@@ -273,41 +273,48 @@ require('telescope').setup {
 pcall(require('telescope').load_extension, 'fzf')
 
 -- See `:help telescope.builtin`
-vim.keymap.set('n', '<leader>?', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
-vim.keymap.set('n', '<leader><space>', require('telescope.builtin').buffers, { desc = '[ ] Find existing buffers' })
-vim.keymap.set('n', '<leader>/', function()
-  -- You can pass additional configuration to telescope to change theme, layout, etc.
-  require('telescope.builtin').current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
-    winblend = 10,
-    previewer = false,
-  })
-end, { desc = '[/] Fuzzily search in current buffer' })
-
-vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
-vim.keymap.set('n', '<leader>sf', function() require('telescope.builtin').find_files({ hidden = true }) end,
-  { desc = '[S]earch [F]iles' })
-vim.keymap.set('n', '<leader>sh', require('telescope.builtin').help_tags, { desc = '[S]earch [H]elp' })
-vim.keymap.set('n', '<leader>sw', require('telescope.builtin').grep_string, { desc = '[S]earch current [W]ord' })
-vim.keymap.set('n', '<leader>sg', require('telescope.builtin').live_grep, { desc = '[S]earch by [G]rep' })
-vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { desc = '[S]earch [D]iagnostics' })
-vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = '[S]earch [R]esume' })
-
--- [[ Git diff views ]]
 do
-  local diffviewOpen = false
-  vim.keymap.set('n', '<leader>gd', function(args)
-    local dv = require('diffview')
-    diffviewOpen = not (diffviewOpen)
-    if diffviewOpen then
-      return dv.open(args)
-    else
-      return dv.close(args)
-    end
-  end, { desc = '[G]it [D]iff' })
+  local pkg = require('telescope.builtin')
+  local set = vim.keymap.set
+
+  local current_buf_fzf = function()
+    pkg.current_buffer_fuzzy_find(pkg.get_dropdown {
+      winblend = 10,
+      previewer = false,
+    })
+  end
+
+  local find_files = function() pkg.find_files({ hidden = true }) end;
+
+  set('n', '<leader>?', pkg.oldfiles, { desc = '[?] Find recently opened files' })
+  set('n', '<leader><space>', pkg.buffers, { desc = '[ ] Find existing buffers' })
+  set('n', '<leader>/', current_buf_fzf, { desc = '[/] Fuzzily search in current buffer' })
+  set('n', '<leader>gf', pkg.git_files, { desc = 'Search [G]it [F]iles' })
+  set('n', '<leader>sf', find_files, { desc = '[S]earch [F]iles', })
+  set('n', '<leader>sh', pkg.help_tags, { desc = '[S]earch [H]elp' })
+  set('n', '<leader>sw', pkg.grep_string, { desc = '[S]earch current [W]ord' })
+  set('n', '<leader>sg', pkg.live_grep, { desc = '[S]earch by [G]rep' })
+  set('n', '<leader>sd', pkg.diagnostics, { desc = '[S]earch [D]iagnostics' })
+  set('n', '<leader>sr', pkg.resume, { desc = '[S]earch [R]esume' })
 end
 
--- vim.keymap.set('n', '<leader>gdo', require('diffview').open, { desc = '[G]it [D]iff [O]pen' })
--- vim.keymap.set('n', '<leader>gdc', require('diffview').close, { desc = '[G]it [D]iff [C]lose' })
+-- [[ Git diff views ]]
+--
+-- The behaviour we are going for here is the following:
+-- <leader>gd should toggle individual Diffview "panels".
+-- If no Diffview is currently open or actively being viewed
+-- then a new diffview is opened.
+-- If a Diffview is currently being viewed, then it is closed.
+do
+  vim.keymap.set('n', '<leader>gd', function(args)
+    local current_buffer = vim.api.nvim_get_current_buf()
+    local current_buffer_name = vim.api.nvim_buf_get_name(current_buffer)
+    local diffviewOpen = string.match(current_buffer_name, '^diffview.*')
+    local dv = require('diffview')
+    if diffviewOpen then dv.close(args) else dv.open(args) end
+  end
+  , { desc = '[G]it [D]iff' })
+end
 
 -- [[ Git log as graph ... uses vim-flog, we did not find a way to call the api directly ... ]]
 vim.keymap.set('n', '<leader>gl', ":Flog<cr>", { desc = '[G]it [L]og' })
@@ -405,9 +412,22 @@ do
     local current_buffer = vim.api.nvim_get_current_buf()
     local current_buffer_name = vim.api.nvim_buf_get_name(current_buffer)
     -- see lua pattern matching documentation for explanation of the below non-regex pattern
-    local flog_buffer_active = string.match(current_buffer_name, "/?flog%-%d+ %[max_count=%d+%]")
+    local patrn_flog = "/?flog%-%d+"
+    local patrn_max_count = "%[max_count=%d+%]"
+    local patrn_all = "%[all%]"
 
-    if not flog_buffer_active then
+    -- NOTE the need for two patters because we are not able to match optionally on a subpatter in lua patterns
+    local flog_buffer_active = string.match(
+      current_buffer_name,
+      patrn_flog .. " " .. patrn_max_count
+    )
+
+    local flog_buffer_active_all = string.match(
+      current_buffer_name,
+      patrn_flog .. " " .. patrn_all .. " " .. patrn_max_count
+    )
+
+    if not (flog_buffer_active or flog_buffer_active_all) then
       return
     end
 
