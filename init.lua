@@ -305,28 +305,28 @@ require('lazy').setup({
 -- NOTE: You can change these options as you wish!
 
 vim.o.wrap = false -- no wrapping, useful when viewing git diff, not however that the terminal itself might wrap
-vim.o.hlsearch = false -- Set highlight on search
-vim.o.mouse = 'a' -- Enable mouse mode
+-- vim.o.hlsearch = false -- Set highlight on search
+vim.o.mouse = 'a'  -- Enable mouse mode
 
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
 vim.o.clipboard = 'unnamedplus'
 
-vim.o.breakindent = true -- Enable break indent
-vim.o.undofile = true -- Save undo history
+vim.o.breakindent = true               -- Enable break indent
+vim.o.undofile = true                  -- Save undo history
 
-vim.o.ignorecase = true -- Case-insensitive searching UNLESS \C or capital in search
-vim.o.smartcase = true -- Case-insensitive searching UNLESS \C or capital in search
+vim.o.ignorecase = true                -- Case-insensitive searching UNLESS \C or capital in search
+vim.o.smartcase = true                 -- Case-insensitive searching UNLESS \C or capital in search
 
-vim.o.updatetime = 250 -- Decrease update time
-vim.o.timeoutlen = 300 -- Decrease update time
+vim.o.updatetime = 250                 -- Decrease update time
+vim.o.timeoutlen = 300                 -- Decrease update time
 
 vim.o.completeopt = 'menuone,noselect' -- Set completeopt to have a better completion experience
-vim.o.termguicolors = true -- NOT
+vim.o.termguicolors = true             -- NOT
 
-vim.wo.signcolumn = 'yes' -- Keep signcolumn on by default
-vim.wo.number = true -- Make line numbers defaultE: You should make sure your terminal supports this
+vim.wo.signcolumn = 'yes'              -- Keep signcolumn on by default
+vim.wo.number = true                   -- Make line numbers defaultE: You should make sure your terminal supports this
 
 -- [[ Basic Keymaps ]]
 
@@ -418,18 +418,18 @@ require('diffview').setup({
       -- Config for changed files, and staged files in diff views.
       -- layout = "diff2_vertical",
       layout = "diff2_horizontal",
-      winbar_info = false,   -- See |diffview-config-view.x.winbar_info|
+      winbar_info = false, -- See |diffview-config-view.x.winbar_info|
     },
     merge_tool = {
       -- Config for conflicted files in diff views during a merge or rebase.
       layout = "diff3_horizontal",
-      disable_diagnostics = true,   -- Temporarily disable diagnostics for conflict buffers while in the view.
-      winbar_info = true,           -- See |diffview-config-view.x.winbar_info|
+      disable_diagnostics = true, -- Temporarily disable diagnostics for conflict buffers while in the view.
+      winbar_info = true,         -- See |diffview-config-view.x.winbar_info|
     },
     file_history = {
       -- Config for changed files in file history views.
       layout = "diff2_horizontal",
-      winbar_info = false,   -- See |diffview-config-view.x.winbar_info|
+      winbar_info = false, -- See |diffview-config-view.x.winbar_info|
     },
   },
 
@@ -540,6 +540,44 @@ do
     vim.lsp.buf.code_action()
     -- vim.notify("code action")
   end
+
+  do
+    -- These keymaps make the default vim search a bit more convenient
+    --
+    -- 1. we allow clicking into the buffer even if search is not "completed
+    -- 2. we clear the highlighted instances matching the search when we start insert next
+
+    -- this implements feature 1.
+    vim.keymap.set({ 'c' }, '<LeftMouse>', function()
+      return "<cr>"
+    end, { expr = true })
+
+    -- this implements feature 2.
+    do
+      for _, key in ipairs({ 'i', 'o', 's' }) do
+        vim.keymap.set({ 'n' }, key, function()
+          vim.cmd('noh')
+          return key
+        end, { expr = true })
+      end
+    end
+  end
+
+  -- do
+  -- -- interesting experiments with autocommands :)
+  --   local ctr = 0
+  --   -- for _, event in ipairs({ "CmdwinLeave", "CmdlineLeave", "InsertEnter", "CmdlineEnter", "CursorHold", "CursorHoldI", "CursorMoved", "FocusGained" }) do
+  --   for _, event in ipairs({ "CursorHoldI", "FocusGained" }) do
+  --     vim.api.nvim_create_autocmd({ event }, {
+  --       callback = function(ev)
+  --         vim.notify(tostring(ctr) .. ": event: " .. event)
+  --         ctr = ctr + 1
+  --       end
+  --     })
+  --   end
+  -- end
+
+
 
   vim.keymap.set({ 'i', 'n' }, '<C-.>', lsp_code_action, { desc = 'Code action' })
   vim.keymap.set({ 'i' }, '<M-h>', '<Left>', { desc = 'Move left while inserting' })
