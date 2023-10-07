@@ -304,45 +304,29 @@ require('lazy').setup({
 -- See `:help vim.o`
 -- NOTE: You can change these options as you wish!
 
--- no wrapping, useful when viewing git diff, not however that the terminal itself might wrap
-vim.o.wrap = false
--- Set highlight on search
-vim.o.hlsearch = false
-
--- Make line numbers default
-vim.wo.number = true
-
--- Enable mouse mode
-vim.o.mouse = 'a'
+vim.o.wrap = false -- no wrapping, useful when viewing git diff, not however that the terminal itself might wrap
+vim.o.hlsearch = false -- Set highlight on search
+vim.o.mouse = 'a' -- Enable mouse mode
 
 -- Sync clipboard between OS and Neovim.
 --  Remove this option if you want your OS clipboard to remain independent.
 --  See `:help 'clipboard'`
 vim.o.clipboard = 'unnamedplus'
 
--- Enable break indent
-vim.o.breakindent = true
+vim.o.breakindent = true -- Enable break indent
+vim.o.undofile = true -- Save undo history
 
--- Save undo history
-vim.o.undofile = true
+vim.o.ignorecase = true -- Case-insensitive searching UNLESS \C or capital in search
+vim.o.smartcase = true -- Case-insensitive searching UNLESS \C or capital in search
 
--- Case-insensitive searching UNLESS \C or capital in search
-vim.o.ignorecase = true
-vim.o.smartcase = true
+vim.o.updatetime = 250 -- Decrease update time
+vim.o.timeoutlen = 300 -- Decrease update time
 
--- Keep signcolumn on by default
-vim.wo.signcolumn = 'yes'
+vim.o.completeopt = 'menuone,noselect' -- Set completeopt to have a better completion experience
+vim.o.termguicolors = true -- NOT
 
--- Decrease update time
-vim.o.updatetime = 250
-vim.o.timeoutlen = 300
-
--- Set completeopt to have a better completion experience
-vim.o.completeopt = 'menuone,noselect'
-
--- NOTE: You should make sure your terminal supports this
-vim.o.termguicolors = true
-
+vim.wo.signcolumn = 'yes' -- Keep signcolumn on by default
+vim.wo.number = true -- Make line numbers defaultE: You should make sure your terminal supports this
 
 -- [[ Basic Keymaps ]]
 
@@ -416,6 +400,40 @@ end
 -- If no Diffview is currently open or actively being viewed
 -- then a new diffview is opened.
 -- If a Diffview is currently being viewed, then it is closed.
+-- :h diffview
+-- :h diffview.defaults
+require('diffview').setup({
+  view = {
+    -- Configure the layout and behavior of different types of views.
+    -- Available layouts:
+    --  'diff1_plain'
+    --    |'diff2_horizontal'
+    --    |'diff2_vertical'
+    --    |'diff3_horizontal'
+    --    |'diff3_vertical'
+    --    |'diff3_mixed'
+    --    |'diff4_mixed'
+    -- For more info, see |diffview-config-view.x.layout|.
+    default = {
+      -- Config for changed files, and staged files in diff views.
+      -- layout = "diff2_vertical",
+      layout = "diff2_horizontal",
+      winbar_info = false,   -- See |diffview-config-view.x.winbar_info|
+    },
+    merge_tool = {
+      -- Config for conflicted files in diff views during a merge or rebase.
+      layout = "diff3_horizontal",
+      disable_diagnostics = true,   -- Temporarily disable diagnostics for conflict buffers while in the view.
+      winbar_info = true,           -- See |diffview-config-view.x.winbar_info|
+    },
+    file_history = {
+      -- Config for changed files in file history views.
+      layout = "diff2_horizontal",
+      winbar_info = false,   -- See |diffview-config-view.x.winbar_info|
+    },
+  },
+
+})
 do
   vim.keymap.set('n', '<leader>gd', function(args)
     local current_buffer = vim.api.nvim_get_current_buf()
@@ -431,7 +449,8 @@ do
 end
 
 -- [[ Git log as graph ... uses vim-flog, we did not find a way to call the api directly ... ]]
-vim.keymap.set('n', '<leader>gl', ':Flog<cr>', { desc = '[G]it [L]og' })
+vim.keymap.set('n', '<leader>gl', ':Flog -date=relative<cr>', { desc = '[G]it [L]og' })
+vim.keymap.set('n', '<leader>gs', ':Git<cr>', { desc = '[G]it [S]tatus' })
 
 -- [[ Quickly open this file config file... ]]
 vim.keymap.set('n', '<leader>l', ':e ~/.config/nvim/init.lua<cr>', { desc = '[L]ua config' })
