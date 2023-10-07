@@ -525,7 +525,22 @@ require('nvim-treesitter.configs').setup {
 do
   -- [[ Trivial remappings not related to plugins ]]
   --
-  --
+  do
+    -- in this block we tweak the style of the cursor
+    
+    -- we first define a highlight group
+    vim.api.nvim_set_hl(0, "Cursor", { fg = "#E06C75", bg = "#E06C75" });
+
+    -- we refer to the highlight group here ... but do a lot of other magic too
+    -- check out :help guicursor
+    vim.cmd(
+      'set guicursor=' ..                                  -- see h: guicursor
+      'n-v-c-sm:block' .. ',' ..                           -- in normal visual and code mode we want a block
+      'i-ci-ve:ver25-Cursor' .. ',' ..                     -- in insert mode etc ... we want a vertical cursor
+      'r-cr-o:hor20' .. ',' ..                             -- in replacement modes we want a hor cursor
+      'a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor' -- we want it to blink
+    )
+  end
 
   -- dont care about capitalization of the following builting commands, unfortunately not allowed to add trialing !
   for _, cmd in ipairs({ 'q', 'w', 'wq' }) do
@@ -540,7 +555,6 @@ do
     vim.lsp.buf.code_action()
     -- vim.notify("code action")
   end
-
   do
     -- These keymaps make the default vim search a bit more convenient
     --
@@ -549,7 +563,7 @@ do
 
     -- this implements feature 1.
     vim.keymap.set({ 'c' }, '<LeftMouse>', function()
-      return "<cr>"
+      return "<cr><LeftMouse>"
     end, { expr = true })
 
     -- this implements feature 2.
@@ -561,7 +575,6 @@ do
         end, { expr = true })
       end
     end
-
   end
 
   -- do
