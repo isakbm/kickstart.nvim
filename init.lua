@@ -554,13 +554,14 @@ do
 
     -- this implements feature 2.
     do
-      for _, key in ipairs({ 'i', 'o', 's' }) do
+      for _, key in ipairs({ 'i', 'o', 's', '<Esc>' }) do
         vim.keymap.set({ 'n' }, key, function()
           vim.cmd('noh')
           return key
         end, { expr = true })
       end
     end
+
   end
 
   -- do
