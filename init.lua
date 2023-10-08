@@ -25,7 +25,7 @@ if vim.g.neovide then
   -- Ignore horizonta, scrolling ...
   vim.keymap.set({ 'i', 'n' }, '<ScrollWheelRight>', '<nop>')
   vim.keymap.set({ 'i', 'n' }, '<ScrollWheelLeft>', '<nop>')
---  vim.g.neovide_refresh_rate = 60
+  --  vim.g.neovide_refresh_rate = 60
 end
 
 -- vim.api.nvim_create_user_command('G', ':Fugitive', {})
@@ -533,10 +533,10 @@ do
     -- we refer to the highlight group here ... but do a lot of other magic too
     -- check out :help guicursor
     vim.cmd(
-      'set guicursor=' ..                                  -- see h: guicursor
-      'n-v-c-sm:block' .. ',' ..                           -- in normal visual and code mode we want a block
-      'i-ci-ve:ver25-Cursor' .. ',' ..                     -- in insert mode etc ... we want a vertical cursor
-      'r-cr-o:hor20' .. ',' ..                             -- in replacement modes we want a hor cursor
+      'set guicursor=' ..                                    -- see h: guicursor
+      'n-v-c-sm:block' .. ',' ..                             -- in normal visual and code mode we want a block
+      'i-ci-ve:ver25-Cursor' .. ',' ..                       -- in insert mode etc ... we want a vertical cursor
+      'r-cr-o:hor20' .. ',' ..                               -- in replacement modes we want a hor cursor
       'a:blinkwait700-blinkoff400-blinkon250-Cursor/lCursor' -- we want it to blink
     )
   end
@@ -576,20 +576,44 @@ do
     end
   end
 
-  -- do
-  -- -- interesting experiments with autocommands :)
-  --   local ctr = 0
-  --   -- for _, event in ipairs({ "CmdwinLeave", "CmdlineLeave", "InsertEnter", "CmdlineEnter", "CursorHold", "CursorHoldI", "CursorMoved", "FocusGained" }) do
-  --   for _, event in ipairs({ "CursorHoldI", "FocusGained" }) do
-  --     vim.api.nvim_create_autocmd({ event }, {
-  --       callback = function(ev)
-  --         vim.notify(tostring(ctr) .. ": event: " .. event)
-  --         ctr = ctr + 1
-  --       end
-  --     })
-  --   end
-  -- end
+  do
+    -- interesting experiments with autocommands :)
+    local ctr = 0
+    -- for _, event in ipairs({ "CmdwinLeave", "CmdlineLeave", "InsertEnter", "CmdlineEnter", "CursorHold", "CursorHoldI", "CursorMoved", "FocusGained" }) do
+    for _, event in ipairs({ "WinScrolled", "CursorHold" }) do
+      vim.api.nvim_create_autocmd({ event }, {
+        callback = function(ev)
+          -- vim.notify(tostring(ctr) .. ": event: " .. event)
+          ctr = ctr + 1
+        end
+      })
+    end
+  end
 
+  do
+    -- register autocommand callacks to cleverly toggle
+    -- relative numbers when scrolling, .. this works
+    -- around the issue with frames dropped in neovide
+    -- when scrolling quickly with relative numbering on
+
+    -- this autocommand turns relative numbering off when we begin to scroll
+    vim.api.nvim_create_autocmd({ "WinScrolled" }, {
+      callback = function(ev)
+        if vim.o.relativenumber then
+          vim.cmd('set relativenumber norelativenumber')
+        end
+      end
+    })
+
+    -- this autocommand turns relative numberin on when we have idled (stopped scrolling)
+    vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI"}, {
+      callback = function(ev)
+        if not vim.o.relativenumber then
+          vim.cmd('set relativenumber relativenumber')
+        end
+      end
+    })
+  end
 
 
   vim.keymap.set({ 'i', 'n' }, '<C-.>', lsp_code_action, { desc = 'Code action' })
@@ -797,3 +821,4 @@ cmp.setup {
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+--
