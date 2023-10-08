@@ -23,8 +23,9 @@ vim.opt.rtp:prepend(lazypath)
 if vim.g.neovide then
   -- Put anything you want to happen only in Neovide here
   -- Ignore horizonta, scrolling ...
-  -- vim.keymap.set({ 'i', 'n' }, '<ScrollWheelRight>', '<nop>')
-  -- vim.keymap.set({ 'i', 'n' }, '<ScrollWheelLeft>', '<nop>')
+  vim.keymap.set({ 'i', 'n' }, '<ScrollWheelRight>', '<nop>')
+  vim.keymap.set({ 'i', 'n' }, '<ScrollWheelLeft>', '<nop>')
+--  vim.g.neovide_refresh_rate = 60
 end
 
 -- vim.api.nvim_create_user_command('G', ':Fugitive', {})
@@ -302,31 +303,29 @@ require('lazy').setup({
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
--- NOTE: You can change these options as you wish!
 
-vim.o.wrap = false -- no wrapping, useful when viewing git diff, not however that the terminal itself might wrap
+vim.o.wrap = false                     -- no wrapping, useful when viewing git diff, not however that the terminal itself might wrap
 -- vim.o.hlsearch = false -- Set highlight on search
-vim.o.mouse = 'a'  -- Enable mouse mode
+vim.o.mouse = 'a'                      -- Enable mouse mode
 
--- Sync clipboard between OS and Neovim.
---  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
-vim.o.clipboard = 'unnamedplus'
+vim.o.clipboard = 'unnamedplus'        -- Sync clipbarod between OS and Neovim
 
 vim.o.breakindent = true               -- Enable break indent
 vim.o.undofile = true                  -- Save undo history
 
-vim.o.ignorecase = true                -- Case-insensitive searching UNLESS \C or capital in search
-vim.o.smartcase = true                 -- Case-insensitive searching UNLESS \C or capital in search
+vim.o.ignorecase = true                -- Vim builtin search '/' will now ignore case
+vim.o.smartcase = true                 -- Vim builtin search '/' will care about case when there is an uppercase present
 
-vim.o.updatetime = 250                 -- Decrease update time
-vim.o.timeoutlen = 300                 -- Decrease update time
+vim.o.updatetime = 250                 -- Decrease update time => writes to swapfile after inactive ms
+vim.o.timeoutlen = 300                 -- Decrease the timelimit of sequenced commands => relevant for longer keybindings and relates to 'which-key' ?
 
 vim.o.completeopt = 'menuone,noselect' -- Set completeopt to have a better completion experience
-vim.o.termguicolors = true             -- NOT
+vim.o.termguicolors = true             -- Toggle this value if you are experiencing problems with coloring
 
 vim.wo.signcolumn = 'yes'              -- Keep signcolumn on by default
-vim.wo.number = true                   -- Make line numbers defaultE: You should make sure your terminal supports this
+vim.wo.number = true                   -- Make line numbers default: You should make sure your terminal supports this
+
+vim.wo.relativenumber = true           -- Relative line numbering
 
 -- [[ Basic Keymaps ]]
 
@@ -527,9 +526,9 @@ do
   --
   do
     -- in this block we tweak the style of the cursor
-    
+
     -- we first define a highlight group
-    vim.api.nvim_set_hl(0, "Cursor", { fg = "#E06C75", bg = "#E06C75" });
+    vim.api.nvim_set_hl(0, "Cursor", { fg = "#000000", bg = "#E06C75" });
 
     -- we refer to the highlight group here ... but do a lot of other magic too
     -- check out :help guicursor
@@ -605,8 +604,6 @@ do
   --   vim.keymap.set({ 'n', 'v', 'i' }, name, '<Nop>', { desc = 'Just avoid using arrow keys' })
   -- end
 
-  -- Relative line numbering ... lets try it out
-  vim.wo.relativenumber = true
   -- Special git diff action when pressing "," while Flog buffer is active
   -- Shows git diff between what is currently active in working tree and the commit where the cursor is at in the tree
   vim.keymap.set('n', ',', function()
