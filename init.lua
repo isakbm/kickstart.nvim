@@ -23,8 +23,10 @@ vim.opt.rtp:prepend(lazypath)
 if vim.g.neovide then
   -- Put anything you want to happen only in Neovide here
   -- Ignore horizonta, scrolling ...
-  vim.keymap.set({ 'i', 'n' }, '<ScrollWheelRight>', '<nop>')
-  vim.keymap.set({ 'i', 'n' }, '<ScrollWheelLeft>', '<nop>')
+  vim.keymap.set({ 'i', 'n', 'v' }, '<ScrollWheelRight>', '<nop>')
+  vim.keymap.set({ 'i', 'n', 'v' }, '<ScrollWheelLeft>', '<nop>')
+
+  vim.g.neovide_cursor_vfx_mode = "torpedo"
   --  vim.g.neovide_refresh_rate = 60
 end
 
