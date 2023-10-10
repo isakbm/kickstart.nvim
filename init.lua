@@ -28,6 +28,32 @@ if vim.g.neovide then
 
   vim.g.neovide_cursor_vfx_mode = "torpedo"
   --  vim.g.neovide_refresh_rate = 60
+  --
+   do
+    -- register autocommand callacks to cleverly toggle
+    -- relative numbers when scrolling, .. this works
+    -- around the issue with frames dropped in neovide
+    -- when scrolling quickly with relative numbering on
+
+    -- this autocommand turns relative numbering off when we begin to scroll
+    vim.api.nvim_create_autocmd({ "WinScrolled" }, {
+      callback = function(ev)
+        if vim.o.relativenumber then
+          vim.cmd('set relativenumber norelativenumber')
+        end
+      end
+    })
+
+    -- this autocommand turns relative numberin on when we have idled (stopped scrolling)
+    vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI"}, {
+      callback = function(ev)
+        if not vim.o.relativenumber then
+          vim.cmd('set relativenumber relativenumber')
+        end
+      end
+    })
+  end
+
 end
 
 -- vim.api.nvim_create_user_command('G', ':Fugitive', {})
@@ -592,31 +618,7 @@ do
     end
   end
 
-  do
-    -- register autocommand callacks to cleverly toggle
-    -- relative numbers when scrolling, .. this works
-    -- around the issue with frames dropped in neovide
-    -- when scrolling quickly with relative numbering on
-
-    -- this autocommand turns relative numbering off when we begin to scroll
-    vim.api.nvim_create_autocmd({ "WinScrolled" }, {
-      callback = function(ev)
-        if vim.o.relativenumber then
-          vim.cmd('set relativenumber norelativenumber')
-        end
-      end
-    })
-
-    -- this autocommand turns relative numberin on when we have idled (stopped scrolling)
-    vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI"}, {
-      callback = function(ev)
-        if not vim.o.relativenumber then
-          vim.cmd('set relativenumber relativenumber')
-        end
-      end
-    })
-  end
-
+ 
 
   vim.keymap.set({ 'i', 'n' }, '<C-.>', lsp_code_action, { desc = 'Code action' })
   vim.keymap.set({ 'i' }, '<M-h>', '<Left>', { desc = 'Move left while inserting' })
