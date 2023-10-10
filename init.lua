@@ -29,7 +29,7 @@ if vim.g.neovide then
   vim.g.neovide_cursor_vfx_mode = "torpedo"
   --  vim.g.neovide_refresh_rate = 60
   --
-   do
+  do
     -- register autocommand callacks to cleverly toggle
     -- relative numbers when scrolling, .. this works
     -- around the issue with frames dropped in neovide
@@ -45,7 +45,7 @@ if vim.g.neovide then
     })
 
     -- this autocommand turns relative numberin on when we have idled (stopped scrolling)
-    vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI"}, {
+    vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
       callback = function(ev)
         if not vim.o.relativenumber then
           vim.cmd('set relativenumber relativenumber')
@@ -53,7 +53,6 @@ if vim.g.neovide then
       end
     })
   end
-
 end
 
 -- vim.api.nvim_create_user_command('G', ':Fugitive', {})
@@ -510,11 +509,11 @@ require('nvim-treesitter.configs').setup {
       keymaps = {
         -- You can use the capture groups defined in textobjects.scm
         ['aa'] = '@parameter.outer',
-        ['ia'] = '@parameter.inner',
+        -- ['ia'] = '@parameter.inner',
         ['af'] = '@function.outer',
-        ['if'] = '@function.inner',
+        --  ['if'] = '@function.inner',
         ['ac'] = '@class.outer',
-        ['ic'] = '@class.inner',
+        -- ['ic'] = '@class.inner',
       },
     },
     move = {
@@ -569,6 +568,8 @@ do
     )
   end
 
+  -- when in visual mode, insert does the same as substitute
+  vim.keymap.set({ 'v' }, 'i', 's', {});
   -- dont care about capitalization of the following builting commands, unfortunately not allowed to add trialing !
   for _, cmd in ipairs({ 'q', 'w', 'wq' }) do
     vim.api.nvim_create_user_command(string.upper(cmd), ':' .. cmd, {})
@@ -618,7 +619,7 @@ do
     end
   end
 
- 
+
 
   vim.keymap.set({ 'i', 'n' }, '<C-.>', lsp_code_action, { desc = 'Code action' })
   vim.keymap.set({ 'i' }, '<M-h>', '<Left>', { desc = 'Move left while inserting' })
