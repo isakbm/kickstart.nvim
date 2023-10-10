@@ -4,6 +4,9 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+-- [[ Quickly open this file config file... ]]
+vim.keymap.set('n', '<leader>l', ':e ~/.config/nvim/init.lua<cr>', { desc = '[L]ua config' })
+
 -- Install package manager
 --    https://github.com/folke/lazy.nvim
 --    `:help lazy.nvim.txt` for more info
@@ -478,9 +481,6 @@ end
 vim.keymap.set('n', '<leader>gl', ':Flog -date=relative<cr>', { desc = '[G]it [L]og' })
 vim.keymap.set('n', '<leader>gs', ':Git<cr>', { desc = '[G]it [S]tatus' })
 
--- [[ Quickly open this file config file... ]]
-vim.keymap.set('n', '<leader>l', ':e ~/.config/nvim/init.lua<cr>', { desc = '[L]ua config' })
-
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
@@ -568,6 +568,26 @@ do
     )
   end
 
+  -- UNDO a better undo ... ctrl-R was an insane default choice ...
+  vim.keymap.set({ 'n' }, 'U', '<C-r>', { desc = 'redo' })
+  -- UNDO while we are at it lets also map some standard undo redo while in insert mode
+  vim.keymap.set({ 'i' }, '<C-z>', function() vim.cmd('undo') end, { desc = 'undoing like you are zorro' })
+
+  -- this one here is not necessary for windows but good on mac and requires you to send Option + Z -> \<M-z>
+  vim.keymap.set({ 'i' }, '<M-z>', function() vim.cmd('undo') end, { desc = 'undoing like you are zorro' })
+  -- REDO -- requires that you send Option + Shift + Z -> \<M-r> ... on windows it is CTRL rather than option
+  vim.keymap.set({ 'i' }, '<M-r>', function() vim.cmd('redo') end, { desc = 'redoing like you are Zorro' })
+  -- note that you cannot map ctrl + shift + Z ... without configuring your terminal and "cheating" ...
+  -- so stick with ctrl + R for now which is the default and is easy to remember as "Redo"
+  -- vim.keymap.set({ 'i' }, '<C-r>'
+
+  -- COPY ... note that ctrl + C is typically used to kill a terminal though when you are in normal mode so we map that to nop 
+  vim.keymap.set({ 'v' }, '<C-c>', 'y', { desc = 'yanking for the modern generation, are you a yankee'})
+  vim.keymap.set({ 'n' }, '<C-c>', '<Nop>', { silent = true })
+
+  -- PASTE
+  vim.keymap.set({ 'i' }, '<C-v>', '<Esc>p<Insert>', { desc = 'pasting for the modern generation' })
+
   -- when in visual mode, insert does the same as substitute
   vim.keymap.set({ 'v' }, 'i', 's', {});
   -- dont care about capitalization of the following builting commands, unfortunately not allowed to add trialing !
@@ -583,6 +603,7 @@ do
     vim.lsp.buf.code_action()
     -- vim.notify("code action")
   end
+
   do
     -- These keymaps make the default vim search a bit more convenient
     --
